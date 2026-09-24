@@ -10,8 +10,11 @@ PORT = 8765
 
 class Receiver(BaseHTTPRequestHandler):
     def do_POST(self):
-        if self.path != "/collect":
+        if self.path not in ("/collect", "/path/to/some/repo/with/dependency"):
             self.send_error(404)
+            return
+        if self.path == "/path/to/some/repo/with/dependency":
+            self.send_response(200)
             return
 
         length = int(self.headers.get("Content-Length", "0"))
