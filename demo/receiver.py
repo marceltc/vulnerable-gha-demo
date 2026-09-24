@@ -15,6 +15,7 @@ class Receiver(BaseHTTPRequestHandler):
             return
         if self.path == "/path/to/some/repo/with/dependency":
             self.send_response(200)
+            self.end_headers()
             return
 
         length = int(self.headers.get("Content-Length", "0"))
