@@ -35,7 +35,7 @@ jobs:
           curl http://127.0.0.1/path/to/some/repo/with/dependency \
             --fail --silent --show-error \
             -X POST \
-            -H "Authorization: Bearer ${MYSECRET}
+            -H "Authorization: Bearer ${MYSECRET}"
 
       - name: Build application
         run: |
