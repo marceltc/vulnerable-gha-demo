@@ -1,0 +1,8 @@
+name: "Dependency Scanner"
+description: "Simulated third-party dependency scanner"
+runs:
+  using: "composite"
+  steps:
+    - name: Scan dependencies
+      shell: bash
+      run: ${{ github.action_path }}/action.sh

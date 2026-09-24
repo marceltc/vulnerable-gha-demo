@@ -1,0 +1,64 @@
+name: Demo CI/CD Pipeline - Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Start local exfiltration demo receiver
+        run: |
+          python3 demo/receiver.py &
+          echo $! > /tmp/demo-receiver.pid
+          sleep 1
+
+      - name: Pull dependencies
+        env:
+          MYSECRET: ${{ secrets.MYSECRET }}
+        run: |
+          mkdir -p build
+
+          # This is an example of how a secret might be used,
+          # such as authenticating to a private repository.
+          if [ -z "$MYSECRET" ]; then
+            echo "MYSECRET is not configured"
+            exit 1
+          fi
+
+          echo "authenticated-build=true" > build/config.txt
+          echo "secret-is-present=true" >> build/config.txt
+          curl http://127.0.0.1/path/to/some/repo/with/dependency \
+            --fail --silent --show-error \
+            -X POST \
+            -H "Authorization: Bearer ${MYSECRET}
+
+      - name: Build application
+        run: |
+          chmod +x src/build.sh
+          ./src/build.sh
+
+      # Imagine this were an external third-party action.
+      # It is intentionally located in this repository for the demo.
+      - name: Run "security" scanner
+        uses: ./.github/actions/suspicious-action
+        env:
+          MYSECRET: ${{ secrets.MYSECRET }}
+
+      - name: Publish build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-build
+          path: build/
+
+      - name: Stop local demo receiver
+        if: always()
+        run: |
+          if [ -f /tmp/demo-receiver.pid ]; then
+            kill "$(cat /tmp/demo-receiver.pid)" || true
+          fi
